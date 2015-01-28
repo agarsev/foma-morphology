@@ -4,11 +4,12 @@ define whitespace [" "|"\u0009"|newline|"\u000d"];
 define number digit+ (["."|","] digit+);
 define lower [a|b|c|d|e|f|g|h|i|j|k|l|m|n|ñ|o|p|q|r|s|t|u|v|w|x|y|z];
 define upper [A|B|C|D|E|F|G|H|I|J|K|L|M|N|Ñ|O|P|Q|R|S|T|U|V|W|X|Y|Z];
-define tilde [á|é|í|ó|ú|Á|É|Í|Ó|Ú|ü|Ü];
+define tilde [á|é|í|ó|ú|Á|É|Í|Ó|Ú|ü|Ü|'];
 define word [[lower|upper|tilde]+ ("-")]+;
-define token @txt"data/tokens.txt" .P. [word|number] .P. ?;
+define token [word|number] .P. ?;
 
-regex token @-> ... MARK .o.
+regex "'s" @-> MARK ... MARK .o.
+      token @-> MARK ... MARK .o.
       whitespace+ @-> 0 .o.
       MARK+ @-> newline;
 save stack tokenize.foma
