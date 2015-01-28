@@ -12,4 +12,3 @@ regex "'s" @-> MARK ... MARK .o.
       token @-> MARK ... MARK .o.
       whitespace+ @-> 0 .o.
       MARK+ @-> newline;
-save stack tokenize.foma
