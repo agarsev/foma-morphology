@@ -1,7 +1,7 @@
 # TOOLS
 SHELL:=/bin/bash
 COMPILE:=foma/foma -q -l
-LOOKUP:=foma/flookup
+LOOKUP:=foma/flookup -a
 LOOKDOWN:=foma/flookup -x -i
 CURL:=curl
 
@@ -14,19 +14,31 @@ DATA:=data
 tom_url:=www.timesofmalta.com/articles/view/20141201/local/updated-applicants-for-malta-residence-permits-being-given-stolen-addresses.546492
 pais_url:=http://politica.elpais.com/politica/2015/01/22/actualidad/1421925009_157997.html
 
-all: tom.morf pais.tok
+all: tom.EN.morf pais.tok
+
+# ANALYZER SCRIPTS
+$(OUT)/english.foma: $(OUT)/closed.EN.foma $(SRC)/fallback.EN.foma
 
 # SCRIPTS AND STACKS
 $(OUT)/%: $(SRC)/%.foma $(OUT)
 	$(COMPILE) $< <<<"save stack $@" >/dev/null
 
-$(OUT)/cc.foma: $(wildcard $(DATA)/en/cc_*.txt)
+$(OUT)/%: $(OUT)/%.foma $(OUT)
+	$(COMPILE) $< <<<"save stack $@" >/dev/null
+
+$(OUT)/closed.%.foma: $(DATA)/%/cc_*.txt
 	>$@
 	for c in $^; do \
 		b=$${c%%.txt}; \
 		echo "regex @txt\"$$c\" \"+$${b##*cc_}\":0;" >>$@; \
 	done
 	echo "union net" >>$@
+
+$(OUT)/%.foma:
+	>$@
+	for script in $^; do \
+		echo "source $$script" >>$@; \
+	done
 
 # PIPELINE
 %.raw:
@@ -38,11 +50,8 @@ $(OUT)/cc.foma: $(wildcard $(DATA)/en/cc_*.txt)
 %.tok: %.text $(OUT)/tokenize
 	$(LOOKDOWN) $(OUT)/tokenize <$< | sed '/^$$/d' > $@
 
-%.morf: %.tok $(OUT)/english
+%.EN.morf: %.tok $(OUT)/english
 	$(LOOKUP) $(OUT)/english <$< > $@
-
-# EXTRA DEPENDENCIES
-$(OUT)/english: $(OUT)/cc.foma
 
 # UTILITIES
 clean:
