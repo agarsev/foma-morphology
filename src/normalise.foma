@@ -4,4 +4,5 @@ define tag start|end;
 define onlyPars [[start ~tag end]] .P. [?* -> 0];
 define noTags "<" ?* ">" @> " ";
 define noEnts "&" ?* ";" @> " ";
+
 regex onlyPars .o. noTags .o. noEnts;

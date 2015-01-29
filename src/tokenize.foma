@@ -8,7 +8,7 @@ define tilde [á|é|í|ó|ú|Á|É|Í|Ó|Ú|ü|Ü|'];
 define word [[lower|upper|tilde]+ ("-")]+;
 define token [word|number] .P. ?;
 
-regex "'s" @-> MARK ... MARK .o.
-      token @-> MARK ... MARK .o.
-      whitespace+ @-> 0 .o.
-      MARK+ @-> newline;
+regex "'s" @-> MARK ... MARK
+  .o. token @-> MARK ... MARK
+  .o. whitespace+ @-> 0
+  .o. MARK+ @-> newline;

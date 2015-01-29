@@ -14,7 +14,7 @@ DATA:=data
 tom_url:=www.timesofmalta.com/articles/view/20141201/local/updated-applicants-for-malta-residence-permits-being-given-stolen-addresses.546492
 pais_url:=http://politica.elpais.com/politica/2015/01/22/actualidad/1421925009_157997.html
 
-all: tom.EN.morf pais.ES.hyp
+all: tom.EN.morf tom.EN.hyp pais.ES.hyp
 
 # ANALYZER SCRIPTS
 $(OUT)/english.foma: $(OUT)/closed.EN.foma $(SRC)/fallback.EN.foma
@@ -52,6 +52,9 @@ $(OUT)/%.foma:
 
 %.ES.hyp: %.tok $(OUT)/hyphenate_es
 	tr '[:upper:]' '[:lower:]' <$< | $(LOOKDOWN) $(OUT)/hyphenate_es >$@
+
+%.EN.hyp: %.tok $(OUT)/hyphenate_en
+	tr '[:upper:]' '[:lower:]' <$< | $(LOOKDOWN) $(OUT)/hyphenate_en >$@
 
 %.EN.morf: %.tok $(OUT)/english
 	$(LOOKUP) $(OUT)/english <$< > $@

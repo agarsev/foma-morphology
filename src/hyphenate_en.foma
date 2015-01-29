@@ -1,0 +1,18 @@
+define Vowel [a|e|i|o|u];
+define Glide [w|y];
+
+define Stop [b|c|d|g|j|k|p|q|t|x];
+define Fricative [f|h|s|v|z|{sh}];
+define Nasal [m|n];
+define Liquid [l|r];
+
+define Onset [(Stop) (Fricative) (Nasal) (Liquid)] | {wh};
+define Coda (Liquid) (Nasal) (Fricative) (Stop) (s);
+
+define Nucleus (Glide) (Vowel) [[Vowel (Glide)] | y];
+
+define Syllable Onset NUC ?+ NUC Coda;
+
+regex Nucleus @-> NUC ... NUC
+  .o. Syllable @> ... "-" || _ Syllable
+  .o. NUC -> 0;
