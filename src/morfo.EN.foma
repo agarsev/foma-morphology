@@ -1,0 +1,19 @@
+define VLex @txt"data/EN/op_verbs.txt";
+
+define Irreg [{say} "+VBD"]:{said}
+           | [{say} "+VBN"]:{said}
+           | [{be} "+VBD"]:{was}
+           | [{be} "+VBZ"]:{is}
+           | [{be} "+VBP"]:{am}
+           | [{be} "+VBP"]:{are}
+           | [{be} "+VBN"]:{been};
+
+define VSuf "+VB":0 | "+VBZ":[%^ s] | "+VBG":[%^ i n g]
+          | "+VBD":[%^ e d] | "+VBN":[%^ e n];
+
+regex Irreg .P. VLex VSuf
+  .o. e -> 0 || _ %^ [e|i]
+  .o. y -> i || _ %^ e d
+  .o. y -> i e || _ %^ s
+  .o. [..] -> e || s | z | x | c h | s h _ %^ s
+  .o. %^ -> 0;

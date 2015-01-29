@@ -40,7 +40,7 @@ $(ENGLISH): %: %.morf %.hyp
 $(SPANISH): %: %.hyp
 
 # ANALYZER SCRIPTS
-$(OUT)/analyze.EN.foma: $(OUT)/closed.EN.foma $(SRC)/fallback.EN.foma
+$(OUT)/analyze.EN.foma: $(OUT)/closed.EN.foma $(SRC)/morfo.EN.foma $(SRC)/fallback.EN.foma
 
 # SCRIPTS AND STACKS
 $(OUT)/%: $(SRC)/%.foma | $(OUT)
