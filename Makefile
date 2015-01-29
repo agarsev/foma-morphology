@@ -25,9 +25,10 @@ DATA:=data
 
 # TARGETS
 tom_url:=www.timesofmalta.com/articles/view/20141201/local/updated-applicants-for-malta-residence-permits-being-given-stolen-addresses.546492
+dollar_url:=http://www.timesofmalta.com/articles/view/20141120/business-market-analysis/Dollar-is-at-seven-year-high-vs-yen.544851
 pais_url:=http://politica.elpais.com/politica/2015/01/22/actualidad/1421925009_157997.html
 
-ENGLISH:=tom
+ENGLISH:=tom dollar
 SPANISH:=pais
 
 $(ENGLISH): L:=EN

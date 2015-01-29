@@ -6,7 +6,7 @@ define Fricative [f|h|s|v|z|{sh}];
 define Nasal [m|n];
 define Liquid [l|r];
 
-define Onset [(Stop) (Fricative) (Nasal) (Liquid)] | {wh};
+define Onset [(Stop) (Fricative) (Nasal | Liquid)] | {wh};
 define Coda (Liquid) (Nasal) (Fricative) (Stop) (s);
 
 define Nucleus (Glide) (Vowel) [[Vowel (Glide)] | y];
