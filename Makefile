@@ -14,7 +14,7 @@ DATA:=data
 tom_url:=www.timesofmalta.com/articles/view/20141201/local/updated-applicants-for-malta-residence-permits-being-given-stolen-addresses.546492
 pais_url:=http://politica.elpais.com/politica/2015/01/22/actualidad/1421925009_157997.html
 
-all: tom.EN.morf pais.tok
+all: tom.EN.morf pais.ES.hyp
 
 # ANALYZER SCRIPTS
 $(OUT)/english.foma: $(OUT)/closed.EN.foma $(SRC)/fallback.EN.foma
@@ -50,12 +50,15 @@ $(OUT)/%.foma:
 %.tok: %.text $(OUT)/tokenize
 	$(LOOKDOWN) $(OUT)/tokenize <$< | sed '/^$$/d' > $@
 
+%.ES.hyp: %.tok $(OUT)/hyphenate_es
+	tr '[:upper:]' '[:lower:]' <$< | $(LOOKDOWN) $(OUT)/hyphenate_es >$@
+
 %.EN.morf: %.tok $(OUT)/english
 	$(LOOKUP) $(OUT)/english <$< > $@
 
 # UTILITIES
 clean:
-	rm -rf $(OUT) *.morf *.text *.tok
+	rm -rf $(OUT) *.morf *.text *.tok *.hyp
 
 pristine: clean
 	rm -f *.raw

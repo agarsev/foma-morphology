@@ -1,0 +1,26 @@
+define OnsetOnly [{rr}|{ch}|h|j|{ll}|Y|ñ|{qU}|{gU}];
+define Alone [m|n|s|x|y|z];
+define Liquid [m|n|s];
+define Hard [b|c|d|f|g|k|p|t|v|w];
+define Soft [l|r];
+
+define Tilde [á|é|í|ó|ú];
+define Open [a|e|o];
+define Closed [i|u];
+define Vowel Tilde | Open | Closed;
+
+# According to some (RAE?), Tilde always breaks diphtong...
+define Nucleus Closed | [(Closed | ü) [Open|Tilde] (Closed | y)] | {ui} | {iu};
+
+define Onset OnsetOnly | Alone | [(Hard) (Soft)];
+define Coda (Hard | Soft | Alone) (Liquid);
+
+define Syllable Onset NUC ?+ NUC Coda;
+
+regex u -> U || [g|q] _ [i|e] # que gue qui gui
+  .o. y -> Y || Vowel _ Vowel # ayer
+  .o. Nucleus @-> NUC ... NUC
+  .o. Syllable @> ... "-" || _ Syllable
+  .o. U -> u
+  .o. Y -> y
+  .o. NUC -> 0;
