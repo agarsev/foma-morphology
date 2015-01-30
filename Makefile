@@ -61,7 +61,7 @@ $(OUT)/closed.%.foma: $(DATA)/%/cc_*.txt | $(OUT)
 	echo "union net" >>$@
 
 $(OUT)/%.foma: | $(OUT)
-	$(call DEBUG,"Compiling aggregated script $@")
+	$(call DEBUG,"Compiling aggregated script $@ from $^")
 	>$@
 	for script in $^; do \
 		echo "source $$script" >>$@; \

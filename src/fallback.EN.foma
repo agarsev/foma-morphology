@@ -1,1 +1,12 @@
+define Capital [A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z];
+
+regex Capital ?* "+NNP":0;
+regex Capital ?* "+NNPS":s;
+regex ?+ "-" ?+ "+JJ":0;
+regex ?* y "+RB":0;
+regex ?* "+JJR|RBR":{er};
+regex ?* "+JJS|RBS":{est};
+regex ?* "+VBD":{ed};
+regex ?* "+VBG":{ing};
+regex ?* "+NNS|VBZ":s;
 regex ?* "+NN":0;
