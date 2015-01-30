@@ -40,7 +40,7 @@ $(ENGLISH): %: %.morf %.hyp
 $(SPANISH): %: %.hyp
 
 # ANALYZER SCRIPTS
-$(OUT)/analyze.EN.foma: $(OUT)/closed.EN.foma $(SRC)/morfo.EN.foma $(SRC)/fallback.EN.foma
+$(OUT)/analyze.EN.foma: $(OUT)/closed.EN.foma $(SRC)/closed.after.foma $(SRC)/morfo.EN.foma $(SRC)/fallback.EN.foma
 
 # SCRIPTS AND STACKS
 $(OUT)/%: $(SRC)/%.foma | $(OUT)
@@ -62,10 +62,7 @@ $(OUT)/closed.%.foma: $(DATA)/%/cc_*.txt | $(OUT)
 
 $(OUT)/%.foma: | $(OUT)
 	$(call DEBUG,"Compiling aggregated script $@ from $^")
-	>$@
-	for script in $^; do \
-		echo "source $$script" >>$@; \
-	done
+	cat $^ >$@
 
 # PIPELINE
 %.raw:

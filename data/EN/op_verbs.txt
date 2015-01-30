@@ -219,10 +219,8 @@ arclike
 are
 argue
 arise
-arisen
 arm
 armour
-arose
 arouse
 arraign
 arrange
@@ -4850,7 +4848,6 @@ roost
 root
 rootle
 rope
-rose
 roseleaf
 rosin
 rot
@@ -6236,7 +6233,6 @@ uplift
 upp
 uprise
 uproot
-uprose
 upset
 upstage
 urbanize
