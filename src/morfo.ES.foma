@@ -5,12 +5,13 @@ define OAGen ["+Masc":o | "+Fem":a];
 
 # Determinantes
 # =============
+
 # Articulos
 # ---------
 define Determinado "+Masc":{el} "+Sing":0
                  | "+Masc":{lo} "+Plural":s
                  | "+Neut":{lo} "+Sing":0
-                 | "+Fem":{la} Splural
+                 | "+Fem":{la} SPlural
                  ;
 define Indeterminado "+Masc":{un} ["+Sing":0 | "+Plural":{os}]
                    | "+Fem":{una} SPlural
@@ -28,18 +29,27 @@ define Determinante [ Articulo | Numero ] "+Det":0
                   | ["DE+EL"]:{del}
                   ;
 
+# Demonstrative
+
 # Pronombres
 # ==========
 define Personal ["+1a" "+Sing"]:{yo}
-              | ["+2a" "+Sing"]:{tu}
+              | ["+2a" "+Sing"]:{tú}
               | ["+3a" "+Masc" "+Sing"]:{él}
               | ["+3a" "+Neut" "+Sing"]:{ello}
               | ["+3a" "+Fem"]:{ella} SPlural
               | ["+1a":n | "+2a":v] {osotr} OAGen "+Plural":s
               | ["+3a" "+Masc" "+Plural"]:{ellos}
               ;
+define Posesivo ["+1a" "+Sing"]:{mí} OAGen
+              | ["+2a" "+Sing"]:{tuy} OAGen
+              | "+3a":{suy} OAGen "+Plural":(s)
+              | ["+1a":n | "+2a":v] {uestr} OAGen "+Plural":(s)
+              ;
 
-define Pronombre Personal "+Pers":0 "+Pron":0;
+# Demonstrative
+
+define Pronombre [Personal "+Pers":0 | Posesivo "+Pos":0] "+Pron":0;
 
 # Lexicon
 # =======

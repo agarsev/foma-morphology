@@ -1,0 +1,1 @@
+regex ?* [o "+Masc":0 |a "+Fem":0] ["+Sing":0|"+Plural":s] "+Sust":0;
