@@ -1,0 +1,52 @@
+# Trucos
+# ======
+define SPlural ["+Sing":0 | "+Plural":s];
+define OAGen ["+Masc":o | "+Fem":a];
+
+# Determinantes
+# =============
+# Articulos
+# ---------
+define Determinado "+Masc":{el} "+Sing":0
+                 | "+Masc":{lo} "+Plural":s
+                 | "+Neut":{lo} "+Sing":0
+                 | "+Fem":{la} Splural
+                 ;
+define Indeterminado "+Masc":{un} ["+Sing":0 | "+Plural":{os}]
+                   | "+Fem":{una} SPlural
+                   ;
+define Articulo Determinado "+ArtD":0
+              | Indeterminado "+ArtI":0
+              ;
+
+# Numerales
+# ---------
+define Digito [%0|1|2|3|4|5|6|7|8|9];
+define Numero [Digito* [(%.|%,) Digito+]*] "+Numeral":0;
+
+define Determinante [ Articulo | Numero ] "+Det":0
+                  | ["DE+EL"]:{del}
+                  ;
+
+# Pronombres
+# ==========
+define Personal ["+1a" "+Sing"]:{yo}
+              | ["+2a" "+Sing"]:{tu}
+              | ["+3a" "+Masc" "+Sing"]:{él}
+              | ["+3a" "+Neut" "+Sing"]:{ello}
+              | ["+3a" "+Fem"]:{ella} SPlural
+              | ["+1a":n | "+2a":v] {osotr} OAGen "+Plural":s
+              | ["+3a" "+Masc" "+Plural"]:{ellos}
+              ;
+
+define Pronombre Personal "+Pers":0 "+Pron":0;
+
+# Lexicon
+# =======
+define Lexicon Determinante
+             | Pronombre
+             ;
+
+# Ortographic rules
+# =================
+regex Lexicon;
