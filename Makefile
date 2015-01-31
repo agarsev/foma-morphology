@@ -6,6 +6,9 @@ LOOKDOWN:=foma/flookup -x -i
 CURL:=curl
 
 # MAKEFILE OPTIONS
+DICT_ES:=HAND
+DICT_EN:=AUTO # Can be HAND for hand-made, AUTO for big wordlist
+
 VERBOSE:=yes
 
 INFO=@echo -e "\e[92m"$(1)"\e[0m"
@@ -18,7 +21,7 @@ endif
 .SECONDEXPANSION:
 .SUFFIXES:
 
-# DIRECTORIES AND DATA
+# DIRECTORIES
 OUT:=out
 SRC:=src
 DATA:=data
@@ -40,7 +43,7 @@ $(ENGLISH): %: %.morf %.hyp
 $(SPANISH): %: %.hyp
 
 # ANALYZER SCRIPTS
-$(OUT)/analyze.EN.foma: $(OUT)/closed.EN.foma $(SRC)/case_ignore.foma $(SRC)/morfo.EN.foma $(SRC)/fallback.EN.foma
+$(OUT)/analyze.EN.foma: $(OUT)/closed.EN.foma $(SRC)/case_ignore.foma $(SRC)/morfo.EN.foma $(SRC)/fallback.EN.foma | $(DATA)/EN/OP
 
 # SCRIPTS AND STACKS
 $(OUT)/%: $(SRC)/%.foma | $(OUT)
@@ -51,12 +54,12 @@ $(OUT)/%: $(OUT)/%.foma | $(OUT)
 	$(call DEBUG,"Compiling $< to $@")
 	$(COMPILE) $< <<<"save stack $@" >/dev/null
 
-$(OUT)/closed.%.foma: $(DATA)/%/cc_*.txt | $(OUT)
+$(OUT)/closed.%.foma: $(DATA)/%/CC/*.txt | $(OUT)
 	$(call DEBUG,"Aggregating data to $@")
 	>$@
 	for c in $^; do \
 		b=$${c%%.txt}; \
-		echo "regex @txt\"$$c\" \"+$${b##*cc_}\":0;" >>$@; \
+		echo "regex @txt\"$$c\" \"+$${b##*/}\":0;" >>$@; \
 	done
 	echo "union net" >>$@
 
@@ -85,14 +88,18 @@ $(OUT)/%.foma: | $(OUT)
 	$(call INFO,"Making $@ from $< ($L)")
 	$(LOOKUP) $(OUT)/analyze.$L <$< > $@
 
+# FOLDERS
+$(OUT):
+	mkdir -p $(OUT)
+
+$(DATA)/%/OP:
+	ln -s $(DATA)/$*/$(DICT_$*) $@
+
 # UTILITIES
 clean:
-	rm -rf $(OUT) *.morf *.text *.tok *.hyp
+	rm -rf $(OUT) $(DATA)/EN/OP $(DATA)/ES/OP *.morf *.text *.tok *.hyp
 
 pristine: clean
 	rm -f *.raw
-
-$(OUT):
-	mkdir -p $(OUT)
 
 .PHONY: clean pristine

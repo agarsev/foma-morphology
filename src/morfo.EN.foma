@@ -5,7 +5,7 @@ define Number [Digit* [(%.|%,) Digit+]*] "+CD":0;
 
 # Nouns
 # =====
-define NLex @txt"data/EN/op_nouns.txt";
+define NLex @txt"data/EN/OP/NN.txt";
 
 define NSuf "+NN":0 | "+NNS":[%^ s];
 
@@ -15,7 +15,7 @@ define Noun NIrreg .P. NLex NSuf;
 
 # Verbs
 # =====
-define VLex @txt"data/EN/op_verbs.txt";
+define VLex @txt"data/EN/OP/VB.txt";
 
 define VSuf "+VB":0 | "+VBZ":[%^ s] | "+VBG":[%^ i n g]
           | "+VBD":[%^ e d] | "+VBN":[%^ e n];
@@ -33,7 +33,7 @@ define Verb VIrreg .P. VLex VSuf;
 
 # Adjectives
 # ==========
-define JLex @txt"data/EN/op_adjs.txt";
+define JLex @txt"data/EN/OP/JJ.txt";
 
 define JSuf "+JJ":0 | "+JJR":[%^ e r] | "+JJS":[%^ e s t];
 
@@ -41,7 +41,7 @@ define Adjective JLex JSuf;
 
 # Adverbs
 # =======
-define RBLex @txt"data/EN/op_advs.txt";
+define RBLex @txt"data/EN/OP/RB.txt";
 
 define RBSuf "+RB":0 | "+RBR":[%^ e r] | "+RBS":[%^ e s t];
 
