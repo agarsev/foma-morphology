@@ -1,19 +1,65 @@
+# Numerals
+# ========
+define Digit [%0|1|2|3|4|5|6|7|8|9];
+define Number [Digit* [(%.|%,) Digit+]*] "+CD":0;
+
+# Nouns
+# =====
+define NLex @txt"data/EN/op_nouns.txt";
+
+define NSuf "+NN":0 | "+NNS":[%^ s];
+
+define NIrreg  [{goose} "+NNS"]:{geese};
+
+define Noun NIrreg .P. NLex NSuf;
+
+# Verbs
+# =====
 define VLex @txt"data/EN/op_verbs.txt";
 
-define Irreg [{say} "+VBD"]:{said}
+define VSuf "+VB":0 | "+VBZ":[%^ s] | "+VBG":[%^ i n g]
+          | "+VBD":[%^ e d] | "+VBN":[%^ e n];
+
+define VIrreg [{say} "+VBD"]:{said}
            | [{say} "+VBN"]:{said}
            | [{be} "+VBD"]:{was}
            | [{be} "+VBZ"]:{is}
            | [{be} "+VBP"]:{am}
            | [{be} "+VBP"]:{are}
-           | [{be} "+VBN"]:{been};
+           | [{be} "+VBN"]:{been}
+           | [{speak} "+VBD"]:{spoke};
 
-define VSuf "+VB":0 | "+VBZ":[%^ s] | "+VBG":[%^ i n g]
-          | "+VBD":[%^ e d] | "+VBN":[%^ e n];
+define Verb VIrreg .P. VLex VSuf;
 
-regex Irreg .P. VLex VSuf
+# Adjectives
+# ==========
+define JLex @txt"data/EN/op_adjs.txt";
+
+define JSuf "+JJ":0 | "+JJR":[%^ e r] | "+JJS":[%^ e s t];
+
+define Adjective JLex JSuf;
+
+# Adverbs
+# =======
+define RBLex @txt"data/EN/op_advs.txt";
+
+define RBSuf "+RB":0 | "+RBR":[%^ e r] | "+RBS":[%^ e s t];
+
+define Adverb RBLex RBSuf;
+
+# Lexicon
+# =======
+define Lexicon Number
+             | Adverb
+             | Noun
+             | Verb
+             | Adjective;
+
+# Ortographic rules
+# =================
+regex Lexicon
   .o. e -> 0 || _ %^ [e|i]
   .o. y -> i || _ %^ e d
   .o. y -> i e || _ %^ s
-  .o. [..] -> e || s | z | x | c h | s h _ %^ s
+  .o. [..] -> e || [s|z|x|{ch}|{sh}] _ %^ s
   .o. %^ -> 0;
