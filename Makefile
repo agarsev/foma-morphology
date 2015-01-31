@@ -40,10 +40,12 @@ $(SPANISH): L:=ES
 all: $(ENGLISH) $(SPANISH)
 
 $(ENGLISH): %: %.morf %.hyp
-$(SPANISH): %: %.hyp
+$(SPANISH): %: %.morf %.hyp
 
 # ANALYZER SCRIPTS
 $(OUT)/analyze.EN.foma: $(OUT)/closed.EN.foma $(SRC)/case_ignore.foma $(SRC)/morfo.EN.foma $(SRC)/fallback.EN.foma | $(DATA)/EN/OP
+
+$(OUT)/analyze.ES.foma: $(OUT)/closed.ES.foma $(SRC)/case_ignore.foma | $(DATA)/ES/OP
 
 # SCRIPTS AND STACKS
 $(OUT)/%: $(SRC)/%.foma | $(OUT)
