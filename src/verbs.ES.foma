@@ -1,0 +1,96 @@
+# Verbos
+# ======
+define GenNum AGen SPlural;
+define Vocal [a|e|i|o|u];
+
+define VInfs @txt"data/ES/OP/Verb.txt";
+define VConj ?* [ "@P.CONJ.1@":0 a
+                | "@P.CONJ.2@":0 e
+                | "@P.CONJ.3@":0 i
+                ] r;
+define VLex VConj .o. VInfs;
+
+define Personas "+1s":0 | "+2s":s | "+3s":0
+              | "+1p":[m o s] | "+2p":[%' i s] | "+3p":n
+              ;
+
+define NoFin "+Inf":0
+           | "+Ger":[%R %EIIE n d o]
+           | "+Part":[%R %EI d o] GenNum
+           | "+Imp":%R ["+2s":%IE |"+2p":d]
+           ;
+define Futuro "+Fut":0
+              [ "+1s":é | "+1p":{emos}
+              | "+2s":{ás} | "+2p":{éis}
+              | "+3s":{á} | "+3p":{án}
+              ];
+define Condicional "+Cond":{ía} Personas;
+define CondLex {tener}:{tendr};
+
+define SubjPret "+PretSubj":a Personas "@E.CONJ.1@":0
+              | "+PretSubj":[%R %EIIE r a] Personas "@D.CONJ.1@":0
+              ;
+define SPLex {dar}:["@P.CONJ.3@" d i r];
+
+define PretI "+PretImperf":[%R b a] Personas "@E.CONJ.1@":0
+           | "+PretImperf":[%R %V í a] Personas "@D.CONJ.1@":0
+           ;
+define PretP "+PretPerf":%R
+               [ [ "+1s":[%V é] | "+1p":{mos}
+                 | "+2s":{ste} | "+2p":{steis}
+                 | "+3s":[%V ó] | "+3p":{ron}
+                 ] "@E.CONJ.1@":0
+               | [ "+1s":[%V í] | "+1p":[%V i m o s]
+                 | "+2s":[%V i s t e] | "+2p":[%V i s t e i s]
+                 | "+3s":[%V i ó ] | "+3p":[%V i e r o n]
+                 ] "@D.CONJ.1@":0
+               ];
+define PPLex {dar}:["@P.CONJ.1@" {dir}]
+           | {decir}:{dijir}
+           ;
+
+define Pres "+Pres":%R [ "+1s":[%V o] | "+1p":{mos}
+                       | "+2s":[%IE s] | "+2p":[%' i s]
+                       | "+3s":%IE | "+3p":[%IE n]
+                       ];
+define PresLex {encontrar}:{encuentrar}
+             | {pedir}:{pidir}
+             ;
+
+define PresSubj "+PresSubj":[%R %V e] Personas "@E.CONJ.1@"
+              | "+PresSubj":[%R %V a] Personas "@D.CONJ.1@"
+              ;
+
+
+define Clitic "+Clit":[({se}) {le}|{la}|{lo} | {se}];
+
+define VReg VLex NoFin
+          | VLex Futuro
+          | [CondLex .P. VLex] Condicional
+          | [SPLex .P. VLex] SubjPret
+          | VLex PretI
+          | [PPLex .P. VLex] PretP
+          | [PresLex .P. VLex] Pres
+          | VLex PresSubj
+          ;
+
+define VIrreg [{haber} "+Pres" "+3s"]:{ha}
+            | [{hacer} "+Part"]:{hecho} GenNum
+            | [{hacer} "+PretPerf" "+3s"]:{hizo}
+            | [{decir} "+PretPerf" "+1s"]:{dije}
+            | [{decir} "+PretPerf" "+3s"]:{dijo}
+            | [{decir} "+PretPerf" "+3p"]:{dijeron}
+            | [{ser} "+PretPerf" "+3s"]:{fue}
+            ;
+
+regex [VIrreg .P. VReg] (Clitic) "+Verbo":0
+   .o. r %R -> 0
+   .o. Vocal %V -> 0
+   .o. i %IE -> e
+   .o. e %EI -> i
+   .o. [e|i] %EIIE -> i e
+   .o. a %' -> á
+   .o. e %' -> é
+   .o. i %' -> í
+   .o. [%'|%IE|%EI|%EIIE] -> 0
+   ;

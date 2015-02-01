@@ -7,7 +7,7 @@ CURL:=curl
 
 # MAKEFILE OPTIONS
 DICT_ES:=HAND
-DICT_EN:=AUTO # Can be HAND for hand-made, AUTO for big wordlist
+DICT_EN:=AUTO
 
 VERBOSE:=yes
 

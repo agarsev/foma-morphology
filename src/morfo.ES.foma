@@ -95,72 +95,8 @@ define Adjetivo @txt"data/ES/OP/Adj.txt" GenNum "+Adj":0;
 # -----------
 define Sustantivo @txt"data/ES/OP/Sust.txt" GenNum "+Sust":0;
 
-# Verbos
-# ------
-define VInfs @txt"data/ES/OP/Verb.txt";
-define VConj ?* [ "@P.CONJ.1@":0 a
-                | "@P.CONJ.2@":0 e
-                | "@P.CONJ.3@":0 i
-                ] r;
-define VLex VConj .o. VInfs;
-
-define Personas "+1s":0 | "+2s":s | "+3s":0
-              | "+1p":[m o s] | "+2p":[%' i s] | "+3p":n
-              ;
-
-define NoFin "+Inf":0
-           | "+Ger":[%R n d o]
-           | "+Part":[%R d o] GenNum
-           | "+Imp":%R ["+2s":0|"+2p":d]
-           ;
-define Futuro "+Fut":0
-              [ "+1s":é | "+1p":{emos}
-              | "+2s":{ás} | "+2p":{éis}
-              | "+3s":{á} | "+3p":{án}
-              ];
-define Condicional "+Cond":{ía} Personas;
-define SubjPret "+PretSubj":a Personas;
-
-define PretI "+PretImperf":[%R b a] Personas "@E.CONJ.1@":0
-           | "+PretImperf":[%R %V í a] Personas "@D.CONJ.1@":0
-           ;
-define PretP "+PretPerf":%R
-               [ [ "+1s":[%V é] | "+1p":{mos}
-                 | "+2s":{ste} | "+2p":{steis}
-                 | "+3s":[%V ó] | "+3p":{ron}
-                 ] "@E.CONJ.1@":0
-               | [ "+1s":[%V í] | "+1p":[%V i m o s]
-                 | "+2s":[%V i s t e] | "+2p":[%V i s t e i s]
-                 | "+3s":[%V i ó ] | "+3p":[%V i e r o n]
-                 ] "@D.CONJ.1@":0
-               ];
-
-define Pres "+Pres":%R [ "+1s":[%V o] | "+1p":{mos}
-                       | "+2s":[%IE s] | "+2p":[%' i s]
-                       | "+3s":%IE | "+3p":[%IE n]
-                       ];
-
-define VSuf NoFin
-          | Futuro
-          | Condicional
-          | SubjPret
-          | PretI
-          | PretP
-          | Pres
-          ;
-
-define Clitic "+Clit":[({se}) {le}|{la}|{lo} | {se}];
-
-define Verbo VLex VSuf (Clitic) "+Verbo":0
-   .o. r %R -> 0
-   .o. Vocal %V -> 0
-   .o. i %IE -> i e
-   .o. a %' -> á
-   .o. e %' -> é
-   .o. i i -> i
-   .o. i %' -> í
-   .o. [%'|%IE] -> 0
-   ;
+source src/verbs.ES.foma
+define Verbo;
 
 # Lexicon
 # =======
