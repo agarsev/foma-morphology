@@ -43,8 +43,9 @@ $(ENGLISH): %: %.morf %.hyp
 $(SPANISH): %: %.morf %.hyp
 
 # ANALYZER SCRIPTS
-$(OUT)/analyze.EN.foma: $(OUT)/closed.EN.foma $(SRC)/case_ignore.foma $(SRC)/morfo.EN.foma $(SRC)/fallback.EN.foma | $(DATA)/EN/OP
-$(OUT)/analyze.ES.foma: $(OUT)/closed.ES.foma $(SRC)/case_ignore.foma $(SRC)/morfo.ES.foma $(SRC)/fallback.ES.foma | $(DATA)/ES/OP
+$(OUT)/analyze.%.foma: $(OUT)/closed.%.foma $(SRC)/case_ignore.foma $(SRC)/morfo.%.foma $(SRC)/case_ignore.foma $(SRC)/fallback.%.foma | $(DATA)/%/OP $(OUT)
+	$(call DEBUG,"Compiling analyzer pipeline $+ -> $@ ($L)")
+	cat $+ >$@
 
 # SCRIPTS AND STACKS
 $(OUT)/%: $(SRC)/%.foma | $(OUT)
@@ -63,10 +64,6 @@ $(OUT)/closed.%.foma: $(DATA)/%/CC/*.txt | $(OUT)
 		echo "regex @txt\"$$c\" \"+$${b##*/}\":0;" >>$@; \
 	done
 	echo "union net" >>$@
-
-$(OUT)/%.foma: | $(OUT)
-	$(call DEBUG,"Compiling aggregated script $@ from $^")
-	cat $^ >$@
 
 # PIPELINE
 %.raw:

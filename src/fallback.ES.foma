@@ -1,1 +1,7 @@
+define Cons [b|c|d|f|g|h|j|k|l|m|n|ñ|p|q|r|s|t|v|w|x|y|z];
+
+regex ?* l "+Adj":0;
+regex ?* {mente} "+Adv":0;
 regex ?* [o "+Masc":0 |a "+Fem":0] ["+Sing":0|"+Plural":s] "+Sust":0;
+regex ?* Cons 0:e "+Plural":s "+Sust":0;
+regex ?* "+Sust":0;

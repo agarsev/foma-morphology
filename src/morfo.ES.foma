@@ -1,7 +1,11 @@
-# Trucos
-# ======
-define SPlural ["+Sing":0 | "+Plural":s];
+# Definiciones
+# ============
+define SPlural ["+Sing":0 | "+Plural":[%^ s]];
 define OAGen ["+Masc":o | "+Fem":a];
+define AGen ["+Masc":0 | "+Fem":[%^ a]];
+
+define Cons [b|c|d|f|g|h|j|k|l|m|n|ñ|p|q|r|s|t|v|w|x|y|z];
+define Vocal [a|e|i|o|u];
 
 # Determinantes
 # =============
@@ -20,16 +24,37 @@ define Articulo Determinado "+ArtD":0
               | Indeterminado "+ArtI":0
               ;
 
+# Demostrativos
+# -------------
+define DDemostrativo 0:{est} [ ["+Masc" "+Sing"]:e
+                          | "+Fem":a SPlural
+                          | "+Neut":o
+                          | "+Masc":o "+Plural":s
+                          ] "+Dem":0;
+
 # Numerales
 # ---------
 define Digito [%0|1|2|3|4|5|6|7|8|9];
 define Numero [Digito* [(%.|%,) Digito+]*] "+Numeral":0;
+define Ordinal {primer} [OAGen SPlural | "+Sing":0]
+             | {segundo} AGen SPlural
+             | {tercer} [OAGen SPlural | "+Sing":0]
+             | {cuarto} AGen SPlural
+             | {quinto} AGen SPlural
+             | {sexto} AGen SPlural
+             | {séptimo} AGen SPlural
+             | {octavo} AGen SPlural
+             | {noveno} AGen SPlural
+             | {décimo} AGen SPlural
+             ;
 
-define Determinante [ Articulo | Numero ] "+Det":0
+define Determinante [ Articulo
+                    | Numero
+                    | DDemostrativo
+                    | Ordinal "+Ord":0
+                    ] "+Det":0
                   | ["DE+EL"]:{del}
                   ;
-
-# Demonstrative
 
 # Pronombres
 # ==========
@@ -38,25 +63,41 @@ define Personal ["+1a" "+Sing"]:{yo}
               | ["+3a" "+Masc" "+Sing"]:{él}
               | ["+3a" "+Neut" "+Sing"]:{ello}
               | ["+3a" "+Fem"]:{ella} SPlural
-              | ["+1a":n | "+2a":v] {osotr} OAGen "+Plural":s
+              | ["+1a":n | "+2a":v] 0:{osotr} OAGen "+Plural":s
               | ["+3a" "+Masc" "+Plural"]:{ellos}
               ;
 define Posesivo ["+1a" "+Sing"]:{mí} OAGen
               | ["+2a" "+Sing"]:{tuy} OAGen
               | "+3a":{suy} OAGen "+Plural":(s)
-              | ["+1a":n | "+2a":v] {uestr} OAGen "+Plural":(s)
+              | ["+1a":n | "+2a":v] 0:{uestr} OAGen "+Plural":(s)
               ;
 
-# Demonstrative
+# Demostrativos
+# -------------
+define PDemostrativo 0:[[é|e] s t] [ ["+Masc" "+Sing"]:e
+                          | "+Fem":a SPlural
+                          | "+Neut":o
+                          | "+Masc":o "+Plural":s
+                          ] "+Dem":0;
 
-define Pronombre [Personal "+Pers":0 | Posesivo "+Pos":0] "+Pron":0;
+define Pronombre [Personal "+Pers":0 | Posesivo "+Pos":0 | PDemostrativo] "+Pron":0;
+
+# Adjetivos
+# =========
+define AdjLex @txt"data/ES/OP/Adj.txt";
+define AdjSuf AGen SPlural;
+define Adjetivo AdjLex AdjSuf "+Adj":0;
 
 # Lexicon
 # =======
 define Lexicon Determinante
              | Pronombre
+             | Adjetivo
              ;
 
 # Ortographic rules
 # =================
-regex Lexicon;
+regex Lexicon
+  .o. [..] -> e || Cons _ %^ s
+  .o. o -> 0 || _ %^ a
+  .o. %^ -> 0;
