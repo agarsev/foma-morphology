@@ -36,3 +36,5 @@ dispuesto
 alternativo
 especialista
 activo
+consciente
+todo

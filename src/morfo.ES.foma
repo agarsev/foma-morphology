@@ -3,6 +3,7 @@
 define SPlural ["+Sing":0 | "+Plural":[%^ s]];
 define OAGen ["+Masc":o | "+Fem":a];
 define AGen ["+Masc":0 | "+Fem":[%^ a]];
+define GenNum AGen SPlural;
 
 define Cons [b|c|d|f|g|h|j|k|l|m|n|ñ|p|q|r|s|t|v|w|x|y|z];
 define Vocal [a|e|i|o|u];
@@ -37,15 +38,8 @@ define DDemostrativo 0:{est} [ ["+Masc" "+Sing"]:e
 define Digito [%0|1|2|3|4|5|6|7|8|9];
 define Numero [Digito* [(%.|%,) Digito+]*] "+Numeral":0;
 define Ordinal {primer} [OAGen SPlural | "+Sing":0]
-             | {segundo} AGen SPlural
              | {tercer} [OAGen SPlural | "+Sing":0]
-             | {cuarto} AGen SPlural
-             | {quinto} AGen SPlural
-             | {sexto} AGen SPlural
-             | {séptimo} AGen SPlural
-             | {octavo} AGen SPlural
-             | {noveno} AGen SPlural
-             | {décimo} AGen SPlural
+             | @txt"data/ES/OP/Num.txt" GenNum
              ;
 
 define Determinante [ Articulo
@@ -54,6 +48,7 @@ define Determinante [ Articulo
                     | Ordinal "+Ord":0
                     ] "+Det":0
                   | ["DE+EL"]:{del}
+                  | ["A+EL"]:{al}
                   ;
 
 # Pronombres
@@ -66,11 +61,13 @@ define Personal ["+1a" "+Sing"]:{yo}
               | ["+1a":n | "+2a":v] 0:{osotr} OAGen "+Plural":s
               | ["+3a" "+Masc" "+Plural"]:{ellos}
               ;
-define Posesivo ["+1a" "+Sing"]:{mí} OAGen
-              | ["+2a" "+Sing"]:{tuy} OAGen
-              | "+3a":{suy} OAGen "+Plural":(s)
-              | ["+1a":n | "+2a":v] 0:{uestr} OAGen "+Plural":(s)
-              ;
+define Posesivo [ ["+1a" "+Sing"]:{mi} OAGen
+                | ["+2a" "+Sing"]:{tu} (0:y OAGen)
+                | "+3a":{su} (0:y OAGen)
+                | ["+1a":n | "+2a":v] 0:{uestr} OAGen
+                ] ("+PlurObj":s);
+
+#TODO dativos
 
 # Demostrativos
 # -------------
@@ -82,17 +79,25 @@ define PDemostrativo 0:[[é|e] s t] [ ["+Masc" "+Sing"]:e
 
 define Pronombre [Personal "+Pers":0 | Posesivo "+Pos":0 | PDemostrativo] "+Pron":0;
 
+# Clase Abierta
+# =============
+
 # Adjetivos
-# =========
-define AdjLex @txt"data/ES/OP/Adj.txt";
-define AdjSuf AGen SPlural;
-define Adjetivo AdjLex AdjSuf "+Adj":0;
+# ---------
+define Adjetivo @txt"data/ES/OP/Adj.txt" GenNum "+Adj":0;
+
+# Sustantivos
+# -----------
+define Sustantivo @txt"data/ES/OP/Sust.txt" GenNum "+Sust":0;
+
+#TODO verbos
 
 # Lexicon
 # =======
 define Lexicon Determinante
              | Pronombre
              | Adjetivo
+             | Sustantivo
              ;
 
 # Ortographic rules
