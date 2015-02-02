@@ -1,18 +1,43 @@
+# Hyphenate (English)
+# ===================
+# This script divides English words into syllables.
+#
+# Since English phonology and ortography are so separated, for a phonological
+# hyphenator the actual pronunciation would be needed. This is an ortographical
+# hyphenator, with the caveat that for a true ortographical hyphenator etymology
+# and morpheme boundaries would actually be necessary.
+
+# Vowels form the nucleus of syllables, with optional glides before and after.
 define Vowel [a|e|i|o|u];
 define Glide [w|y];
+define Nucleus (Glide) (Vowel) [[Vowel (Glide)] | y];
 
+# Consonants can be ordered in a "sonority" scale, which tells us what
+# consonants can precede others in the syllable onset and coda.
 define Stop [b|c|d|g|j|k|p|q|t|x];
 define Fricative [f|h|s|v|z|{sh}];
 define Nasal [m|n];
 define Liquid [l|r];
 
+# In English, the onset (start) and coda (end) of the syllable are not exactly
+# symmetrical, especially because some combinations are not allowed.
 define Onset [(Stop) (Fricative) (Nasal | Liquid)] | {wh};
 define Coda (Liquid) (Nasal) (Fricative) (Stop) (s);
 
-define Nucleus (Glide) (Vowel) [[Vowel (Glide)] | y];
-
+# Hyphenating
+# -----------
+# First, the syllable nucleus must be found, with a __longest__ match approach since
+# we want to allow dipthongs. When we find the nucleus, we mark it with `NUC` to
+# both sides. Then syllables, defined as onset + nucleus + coda are found.
+#
+# Two steps are needed because syllable matching is now __shortest__ match.
+# This encodes the Maximal Onset principle (actually, the equivalent Minimal
+# Coda one).
+#
+# Hyphens are inserted after each syllable, provided it is followed by a valid
+# syllable as context.
 define Syllable Onset NUC ?+ NUC Coda;
 
 regex Nucleus @-> NUC ... NUC
   .o. Syllable @> ... "-" || _ Syllable
-  .o. NUC -> 0;
+  .o. NUC -> 0; # Cleanup

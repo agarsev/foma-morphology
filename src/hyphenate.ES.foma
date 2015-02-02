@@ -1,26 +1,77 @@
+# Hyphenate (Spanish)
+# ===================
+# This script divides Spanish words into syllables.
+#
+# Since Spanish pronunciation follows ortography, it would be expected that
+# syllabification based on ortography only would be possible. This is almost
+# true. The problems come with diphtongs and hiatuses, since in different
+# dialects these are made in different situations. Orthographical accents
+# ("tilde" in Spanish) are supposed to help disambiguating pitch accent, and
+# thus determining whether two vowels do or not form a diphtong. However, many
+# of these rules rely on the speaker's knowledge of the prosody of a given word,
+# so can't be used effectively only with orthography.
+#
+# When possible, the rules stated by the Real Academia de la Lengua (supervisor
+# body of Spanish) are followed.
+
+# Consonants
+# ----------
+# Consonants can be divided in a number of groups depending on the combinations
+# with other consonants they allow, and their order in this clusters. The
+# groups' names are probably very linguistically incorrect, but the author is
+# not a linguist and very lacking in proper terminology.
+#
+# In the special digraphs `qU` and `gU`, the uppercase `U` is used to indicate
+# that this is not a vowel, so it is not erroneously incorporated into the nucleus.
 define OnsetOnly [{rr}|{ch}|h|j|{ll}|Y|ñ|{qU}|{gU}];
 define Alone [m|n|s|x|y|z];
 define Liquid [m|n|s];
 define Hard [b|c|d|f|g|k|p|t|v|w];
 define Soft [l|r];
 
+# Spanish allows much shorter consonant clusters than English, and onset and
+# coda are clearly different.
+define Onset OnsetOnly | Alone | [(Hard) (Soft)];
+define Coda (Hard | Soft | Alone) (Liquid);
+
+# Vowels
+# ------
+# Vowels with a "tilde" (accent) have the pitch accent of the word, so they are
+# always the strong partner in a diphtong. Some sources state that when a tilde
+# is present, there is no diphtong, but the author has not found conclusive
+# arguments, and in his particular dialect this happens to not (always) be true.
 define Tilde [á|é|í|ó|ú];
 define Open [a|e|o];
 define Closed [i|u];
 define Vowel Tilde | Open | Closed;
 
-# According to some (RAE?), Tilde always breaks diphtong...
+# The nucleus is thus defined as a vowel, dipthong or tripthong. The special
+# vowel `ü` is always part of a dipthong, since the dieresis is used to indicate
+# that the u is to be pronounced before an e or i (usually silent after q or g).
+# `y` at the end of word is pronounced as `i`.
 define Nucleus Closed | [(Closed | ü) [Open|Tilde] (Closed | y)] | {ui} | {iu};
 
-define Onset OnsetOnly | Alone | [(Hard) (Soft)];
-define Coda (Hard | Soft | Alone) (Liquid);
-
+# Hyphenating
+# -----------
+# First, the syllable nucleus must be found, with a __longest__ match approach since
+# we want to allow dipthongs. When we find the nucleus, we mark it with `NUC` to
+# both sides. Then syllables, defined as onset + nucleus + coda are found.
+#
+# Two steps are needed because syllable matching is __shortest__ match.
+# This encodes the Maximal Onset principle (actually, the equivalent Minimal
+# Coda one).
+#
+# Hyphens are inserted after each syllable, provided it is followed by a valid
+# syllable as context.
 define Syllable Onset NUC ?+ NUC Coda;
 
-regex u -> U || [g|q] _ [i|e] # que gue qui gui
-  .o. y -> Y || Vowel _ Vowel # ayer
+# First `u` is marked in the digraphs in _qui_, _que_, _gui_ and _gue_.
+# Intervocalic `y` is realized as a consonant, so it is marked so as to not be
+# put in a nucleus (e.g. _ayer_)
+regex u -> U || [g|q] _ [i|e]
+  .o. y -> Y || Vowel _ Vowel
   .o. Nucleus @-> NUC ... NUC
   .o. Syllable @> ... "-" || _ Syllable
   .o. U -> u
   .o. Y -> y
-  .o. NUC -> 0;
+  .o. NUC -> 0; # Cleanup

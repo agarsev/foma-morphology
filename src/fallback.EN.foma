@@ -1,16 +1,40 @@
-define Capital [A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z];
+# English Fallback
+# ================
+# This script provides a series of fallback transducers that try to tag unknown
+# entities in the input.
 
+# We detect proper nouns `NNP`, `NNPS` because they start with a capital letter
+define Capital [A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z];
 regex Capital ?* "+NNP":0;
 regex Capital ?* "+NNPS":s;
+
+# We tag compound words as adjectives `JJ`, because in English when a word
+# cluster is used as an adjective it should be joined by a hyphen (e.g
+# seven-year)
 regex ?+ "-" ?+ "+JJ":0;
+
+# If it ends in _sh_ we tag it as an adjective, since it's a common suffix
 regex ?* s h "+JJ":0;
+
+# Words ending in _y_ we tag as adverbs `RB`
 regex ?* y "+RB":0;
+
+# The comparative and superlative endings for adjectives and adverbs are the
+# same, so we just output an ambiguous guess
 regex ?* "+JJR":{er};
 regex ?* "+RBR":{er};
 regex ?* "+JJS":{est};
 regex ?* "+RBS":{est};
+
+# If it uses a common verb ending, then we assume it's an inflected verb form `VBD`, `VBG`
 regex ?* "+VBD":{ed};
 regex ?* "+VBG":{ing};
+
+# We're running out of option, so if it ends in an _s_, guess it's either a
+# plural noun `NNS` or a third-person singular `VBZ`
 regex ?* "+NNS":s;
 regex ?* "+VBZ":s;
+
+# If everything else fails, tag it as a noun `NN`, since it's the most common
+# open class of words
 regex ?* "+NN":0;

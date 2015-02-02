@@ -1,7 +1,24 @@
-define Cons [b|c|d|f|g|h|j|k|l|m|n|ñ|p|q|r|s|t|v|w|x|y|z];
+# Spanish Fallback
+# ================
+# This script provides a series of fallback transducers that try to tag unknown
+# entities in the input.
 
-regex ?* l "+Adj":0;
+# If a word in Spanish ends in _mente_, it's almost certainly an adverb `Adv`.
 regex ?* {mente} "+Adv":0;
+
+# A lot of adjectives (`Adj`) related to a process end in an _l_, and it's not a common
+# ending for other types of words.
+regex ?* l "+Adj":0;
+
+# Noun (sustantive, `Sust`) morphology in Spanish is quite regular, so _o_ and
+# _a_ endings usually denote gender, and an _s_ is often a plural marker.
 regex ?* [o "+Masc":0 |a "+Fem":0] ["+Sing":0|"+Plural":s] "+Sust":0;
+
+# Another option is a noun that ends in a consonant, then it's usually
+# pluralized with an _es_ morpheme.
+define Cons [b|c|d|f|g|h|j|k|l|m|n|ñ|p|q|r|s|t|v|w|x|y|z];
 regex ?* Cons 0:e "+Plural":s "+Sust":0;
+
+# If we can't detect the gender and number of the word, just mark it as a plain
+# noun.
 regex ?* "+Sust":0;
