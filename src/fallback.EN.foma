@@ -16,8 +16,8 @@ regex ?+ "-" ?+ "+JJ":0;
 # If it ends in _sh_ we tag it as an adjective, since it's a common suffix
 regex ?* s h "+JJ":0;
 
-# Words ending in _y_ we tag as adverbs `RB`
-regex ?* y "+RB":0;
+# Words ending in _ly_ we tag as adverbs `RB`
+regex ?* l y "+RB":0;
 
 # The comparative and superlative endings for adjectives and adverbs are the
 # same, so we just output an ambiguous guess

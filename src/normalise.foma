@@ -1,7 +1,26 @@
+# Normalizer
+# ==========
+# This script gets as input html code, and returns the text that is included in
+# paragraph tags. This has been found to suit many online newspaper formats, in
+# particular the [Times of Malta](timesofmalta.com) and [El País](elpais.com),
+# which are the sources for this assignment's text (in English and Spanish,
+# respectively).
+#
+# HTML parsing is a non-trivial issue, and even simple cases as text extraction
+# are full of corner cases and difficult to solve issues. For a critical
+# component, a parser which understands the DOM structure should be used.
+# However, a reasonable job can be done for this assignment, especially with the
+# clear and easy formatting of online newspapers.
+
+# HTML paragraph start and end tags.
 define start "<" p ">";
 define end "<" "/" p ">";
 define tag start|end;
+
+# First we delete everything that is not a paragraph.
 define onlyPars [[start ~tag end]] .P. [?* -> 0];
+
+# Then we clean tags and html special codes.
 define noTags "<" ?* ">" @> " ";
 define noEnts "&" ?* ";" @> " ";
 

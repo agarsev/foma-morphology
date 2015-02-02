@@ -1,46 +1,93 @@
+# English Morphological Analyzer
+# ==============================
+# This is the component of the pipeline that analyzes English words based on a
+# number of open-class word lists, present in the directory `data/EN/OP/`.
+#
+# The analysis is done with [Penn Treebank-style tags](http://www.comp.leeds.ac.uk/amalgam/tagsets/upenn.html).
+
 # Numerals
-# ========
+# --------
+# Numbers written with letters are a closed class, so they're automatically
+# detected by the script composed by the makefile. Numbers written with digits
+# are open class, and we detect them with this regex. This is a bit of a lenient
+# regex, since it doesn't care whether commas or dots are being used to separate
+# thousands or decimals. However, since the input is already tokenized, it is
+# better to recognize any such sequence as a number.
 define Digit [%0|1|2|3|4|5|6|7|8|9];
 define Number [Digit* [(%.|%,) Digit+]*] "+CD":0;
 
 # Nouns
-# =====
+# -----
+# Noun lexemes are loaded from the corresponding file, and then the
+# pluralization morpheme is added. A morpheme boundary symbol `%^` is inserted,
+# to let rewrite rules handle inter-morpheme phonology.
+#
+# Nouns with irregular plurals bypass the suffix with the priority union
+# operator (`.P.`). A few are listed here, and adding more would be a matter of
+# just writing them in. Nouns that can form the plural both ways are also
+# included.
 define NLex @txt"data/EN/OP/NN.txt";
 
 define NSuf "+NN":0 | "+NNS":[%^ s];
 
-define NIrreg  [{goose} "+NNS"]:{geese};
-
-define Noun NIrreg .P. NLex NSuf;
+define NIrreg [{goose} "+NNS"]:{geese}
+            | [{mouse} "+NNS"]:{mice}
+            | [{sheep} "+NNS"]:{sheep}
+            ;
+define NBoth [{cactus} "+NNS"]:{cacti}
+           | [{virus} "+NNS"]:{viri}
+           ;
+define Noun NIrreg .P. [NBoth | NLex NSuf];
 
 # Verbs
-# =====
+# -----
+# Verbs have more forms than nouns, and a tag is assigned to each of them. Each
+# has its own specific morpheme, but a lot of irregularities also exist. As
+# before, only a few are listed here. However, there is an example of a verb with
+# only one irregular form (_speak_, _spoke_), a verb with two identical forms
+# (_say_, _said_ both as past and past participle), and a highly irregular verb
+# (_to be_).
+#
+# Expanding the list would only require adding the irregularities desired in
+# the variable `VIrreg`. In a more serious endeavour to write an English
+# analyzer, a better formalism (for example continuation classes, such as in
+# `lexc`) might be more appropriate and comfortable to use.
 define VLex @txt"data/EN/OP/VB.txt";
 
 define VSuf "+VB":0 | "+VBZ":[%^ s] | "+VBG":[%^ i n g]
-          | "+VBD":[%^ e d] | "+VBN":[%^ e n];
-
+          | "+VBD":[%^ e d] | "+VBN":[%^ e n]
+          ;
 define VIrreg [{say} "+VBD"]:{said}
-           | [{say} "+VBN"]:{said}
-           | [{be} "+VBD"]:{was}
-           | [{be} "+VBZ"]:{is}
-           | [{be} "+VBP"]:{am}
-           | [{be} "+VBP"]:{are}
-           | [{be} "+VBN"]:{been}
-           | [{speak} "+VBD"]:{spoke};
-
+            | [{say} "+VBN"]:{said}
+            | [{be} "+VBD"]:{was}
+            | [{be} "+VBZ"]:{is}
+            | [{be} "+VBP"]:{am}
+            | [{be} "+VBP"]:{are}
+            | [{be} "+VBN"]:{been}
+            | [{speak} "+VBD"]:{spoke}
+            ;
 define Verb VIrreg .P. VLex VSuf;
 
-# Adjectives
-# ==========
+# Adjectives & Adverbs
+# --------------------
+# Adjectives and adverbs have very similary morphology, with comparative and
+# superlative forms made with the same suffixes. Of course, a syntactic analyzer
+# might find these forms made with the words "more" and "most", but this is a
+# word-by-word morphological analyzer, so that case is not studied. It is to be
+# noted, though, that a perhaps more clever tokenizer might recognize multiword
+# expressions, which then would give the analyzer more flexibility for some
+# cases.
 define JLex @txt"data/EN/OP/JJ.txt";
 
 define JSuf "+JJ":0 | "+JJR":[%^ e r] | "+JJS":[%^ e s t];
 
-define Adjective JLex JSuf;
+define JIrreg [{good} "+JJR"]:{better}
+            | [{good} "+JJS"]:{best}
+            | [{bad} "+JJR"]:{worse}
+            | [{bad} "+JJS"]:{worst}
+            ;
+define Adjective JIrreg .P. JLex JSuf;
 
-# Adverbs
-# =======
 define RBLex @txt"data/EN/OP/RB.txt";
 
 define RBSuf "+RB":0 | "+RBR":[%^ e r] | "+RBS":[%^ e s t];
@@ -48,18 +95,25 @@ define RBSuf "+RB":0 | "+RBR":[%^ e r] | "+RBS":[%^ e s t];
 define Adverb RBLex RBSuf;
 
 # Lexicon
-# =======
+# -------
+# The lexicon is just the possible words that we are going to recognize, with
+# suffixes appended.
 define Lexicon Number
              | Adverb
              | Noun
              | Verb
-             | Adjective;
+             | Adjective
+             ;
 
 # Ortographic rules
-# =================
+# -----------------
+# The lexicon is then passed through ortographic rewrite rules, which take care
+# of morpheme boundary phenomena. This include deletion (`-> 0`), insertion
+# (`[..] ->`, where `[..]` represents an empty transition, but only one), and
+# transformation. Finally the morpheme boundary indicators are dropped.
 regex Lexicon
   .o. e -> 0 || _ %^ [e|i]
-  .o. y -> i || _ %^ e d
+  .o. y -> i || _ %^ e
   .o. y -> i e || _ %^ s
   .o. [..] -> e || [s|z|x|{ch}|{sh}] _ %^ s
   .o. %^ -> 0;

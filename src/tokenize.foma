@@ -1,14 +1,43 @@
-define digit [%0|1|2|3|4|5|6|7|8|9];
-define newline "\u000a";
-define whitespace [" "|"\u0009"|newline|"\u000d"];
-define number digit+ (["."|","] digit+);
-define lower [a|b|c|d|e|f|g|h|i|j|k|l|m|n|ñ|o|p|q|r|s|t|u|v|w|x|y|z];
-define upper [A|B|C|D|E|F|G|H|I|J|K|L|M|N|Ñ|O|P|Q|R|S|T|U|V|W|X|Y|Z];
-define tilde [á|é|í|ó|ú|Á|É|Í|Ó|Ú|ü|Ü|'];
-define word [[lower|upper|tilde]+ ("-")]+;
-define token [word|number] .P. ?;
+# Tokenizer
+# =========
+# This script gets as input normalized text, and separates it into different
+# tokens (basically, words and punctuation).
+#
+# Even though they have slightly different requirements, the same tokenizer is
+# used for both English and Spanish. No conflict can arise, and they can even
+# benefit by being able to parse each other too, in the not so unlikely case that
+# there is mixed language in the input.
 
+# Newlines are used for separating tokens, since that is the format for the next
+# component in the pipeline (lookup).
+define Newline "\u000a";
+
+# Whitespace is to be removed.
+define Whitespace [" "|"\u0009"|Newline|"\u000d"];
+
+# Numbers are a single entity.
+define Digit [%0|1|2|3|4|5|6|7|8|9];
+define Number Digit+ (["."|","] Digit+);
+
+# A word is a sequence of letters and optionally hyphens. We allow multiword
+# expressions to remain together, since often they have special semantics
+# different from the yuxtaposition of the single words.
+define Lower [a|b|c|d|e|f|g|h|i|j|k|l|m|n|ñ|o|p|q|r|s|t|u|v|w|x|y|z];
+define Upper [A|B|C|D|E|F|G|H|I|J|K|L|M|N|Ñ|O|P|Q|R|S|T|U|V|W|X|Y|Z];
+define Tilde [á|é|í|ó|ú|Á|É|Í|Ó|Ú|ü|Ü|'];
+define Word [[Lower|Upper|Tilde]+ ("-")]+;
+
+# A token is a word, a number, or a punctuation sign just by itself.
+define Token [Word|Number] .P. ?;
+
+# We also separate the saxon genitive marker `'s`, since it can be viewed as a
+# clitic particle. See the Spanish morphological analyzer for a different
+# solution to clitic particles.
+#
+# To separate the tokens, we find them in the text and surround them with
+# marks, whitespace is then discarded and finally the marks are substituted for
+# newlines to separate the tokens.
 regex "'s" @-> MARK ... MARK
-  .o. token @-> MARK ... MARK
-  .o. whitespace+ @-> 0
-  .o. MARK+ @-> newline;
+  .o. Token @-> MARK ... MARK
+  .o. Whitespace+ @-> 0
+  .o. MARK+ @-> Newline;
