@@ -1,23 +1,50 @@
-# Definiciones
-# ============
+# Spanish Morphological Analyzer
+# ==============================
+# This is the component of the pipeline that analyzes Spanish words based on a
+# number of open-class word lists, present in the directory `data/ES/OP/`, and
+# also closed-class but variant words.
+#
+# The tagset is multivalued, that is, every word can get more than one tag.
+# Every word gets at least one tag, that of the part of speech. Open class words
+# get the lexeme, while closed class words don't. The extra tags for all words
+# are different morphological pieces of information, encoded by the different
+# morphemes. They are prepended to the part of speech in arbitrary ordering.
+
+# Definitions
+# -----------
+
+# Common morpheme for plural with `s`
 define SPlural ["+Sing":0 | "+Plural":[%^ s]];
+# Variant morpheme for gender
 define OAGen ["+Masc":o | "+Fem":a];
+# Morpheme for "Masculine by default" words, the feminine gender is the morpheme `a`
 define AGen ["+Masc":0 | "+Fem":[%^ a]];
+# Common morpheme set for Spanish words: gender and number
 define GenNum AGen SPlural;
 
+# Consonants
 define Cons [b|c|d|f|g|h|j|k|l|m|n|ñ|p|q|r|s|t|v|w|x|y|z];
+# Vowels
 define Vocal [a|e|i|o|u];
 
 # Determinantes
 # =============
+# Determiners, some of them are listed in the closed class dictionaries. Those
+# with morphological information, even though closed class, are analyzed here to
+# extact the corresponding tags. As most function words, they are highly irregular.
 
 # Articulos
 # ---------
+# Articles can be definite or indefinite, but all have gender and number
+# information.
+
+# Definite articles
 define Determinado "+Masc":{el} "+Sing":0
                  | "+Masc":{lo} "+Plural":s
                  | "+Neut":{lo} "+Sing":0
                  | "+Fem":{la} SPlural
                  ;
+# Indefinite articles
 define Indeterminado "+Masc":{un} ["+Sing":0 | "+Plural":{os}]
                    | "+Fem":{una} SPlural
                    ;
@@ -27,6 +54,8 @@ define Articulo Determinado "+ArtD":0
 
 # Demostrativos
 # -------------
+# Demonstrative determinants are more regular, but still have the neuter gender
+# inherited from latin and lost elsewhere in the language.
 define DDemostrativo 0:{est} [ ["+Masc" "+Sing"]:e
                           | "+Fem":a SPlural
                           | "+Neut":o
@@ -35,6 +64,8 @@ define DDemostrativo 0:{est} [ ["+Masc" "+Sing"]:e
 
 # Numerales
 # ---------
+# Numbers are defined here, and their letter-written ordinal variants are also loaded
+# here, since they can have gender and number inflection.
 define Digito [%0|1|2|3|4|5|6|7|8|9];
 define Numero [Digito* [(%.|%,) Digito+]*] "+Numeral":0;
 define Ordinal {primer} [OAGen SPlural | "+Sing":0]
@@ -42,6 +73,8 @@ define Ordinal {primer} [OAGen SPlural | "+Sing":0]
              | @txt"data/ES/OP/Num.txt" GenNum
              ;
 
+# The two contractions of spanish, `de+el` (del) and `a+el` (al) are listed here
+# with the determinants, but they have a special tag for identification.
 define Determinante [ Articulo
                     | Numero
                     | DDemostrativo
@@ -53,9 +86,16 @@ define Determinante [ Articulo
 
 # Pronombres
 # ==========
+# Pronouns are a very important part of Spanish. They carry gender and number
+# information, and also case information not present in other parts of the
+# language morphology. They are bastardizations from latin pronouns, already
+# irregular, so they are highly irregular.
 
 # Personales
 # ----------
+# Personal pronouns can have any of the Nominative, Accusative (ObjD) and Dative
+# (ObjI) cases. They can also be of neuter gender. First and second person
+# singular don't encode gender.
 define Personal ["+1a":0 "+Sing":0 ["+Nom":{yo} | "+ObjD":{mí} | "+ObjI":{me}]]
               | ["+2a":0 "+Sing":0 ["+Nom":{tu} | "+ObjD":{tí} | "+ObjI":{te}]]
               | ["+3a":0 "+Masc":0 "+Sing":0 [0:{él} | "+Obj":{le} SPlural]]
@@ -67,6 +107,8 @@ define Personal ["+1a":0 "+Sing":0 ["+Nom":{yo} | "+ObjD":{mí} | "+ObjI":{me}]]
               ;
 # Posesivos
 # ---------
+# Possesive pronouns don't have gender information for the bound object, but
+# they optionally add it for the modified one.
 define Posesivo [ ["+1a" "+Sing"]:{mi} OAGen
                 | ["+2a" "+Sing"]:{tu} (0:y OAGen)
                 | "+3a":{su} (0:y OAGen)
@@ -76,6 +118,10 @@ define Posesivo [ ["+1a" "+Sing"]:{mi} OAGen
 
 # Demostrativos
 # -------------
+# Demonstrative pronouns are hard to distinguish from their counterpart
+# determinants with spelling only. In the past, they were distinguished by the
+# ortographical accent (tilde) (é), but the Real Academia dropped that rule a
+# few years back.
 define PDemostrativo 0:[[é|e] s t] [ ["+Masc" "+Sing"]:e
                           | "+Fem":a SPlural
                           | "+Neut":o
@@ -84,22 +130,31 @@ define PDemostrativo 0:[[é|e] s t] [ ["+Masc" "+Sing"]:e
 
 define Pronombre [Personal "+Pers":0 | Posesivo "+Pos":0 | PDemostrativo] "+Pron":0;
 
-# Variantes, Clase Abierta
+# Open class variant words
 # ========================
+# Open class variant words exhibit a more regular morphology than other parts of
+# the language. The lexemes are listed in the dictionary, and they can take
+# gender and number information. They are adjectives (Adjetivos) and nouns
+# (Sustantivos).
 
 # Adjetivos
-# ---------
 define Adjetivo @txt"data/ES/OP/Adj.txt" GenNum "+Adj":0;
 
 # Sustantivos
-# -----------
 define Sustantivo @txt"data/ES/OP/Sust.txt" GenNum "+Sust":0;
 
+# Verbs
+# -----
+# Verbs in romance languages are quite complex, and in Spanish it is indeed so.
+# They merit their own script, which is sourced here. See its documentation
+# [here](verbs.ES.html).
 source src/verbs.ES.foma
 define Verbo;
 
 # Lexicon
 # =======
+# The lexicon is just the possible words that we are going to recognize, with
+# the corresponding suffixes appended.
 define Lexicon Determinante
              | Pronombre
              | Adjetivo
@@ -108,11 +163,18 @@ define Lexicon Determinante
              ;
 
 # Ortographic rules
-# =================
+# -----------------
+# The lexicon is then passed through ortographic rewrite rules, which take care
+# of morpheme boundary phenomena. These are quite more regular in Spanish than
+# in English. A few are listed here, but a linguist would be required to make an
+# exhaustive list. Do note that verb rewrite rules are apart, in the
+# corresponding script, since they are quite more complex.
 regex Lexicon
   .o. [..] -> e || Cons _ %^ s
   .o. z -> c || _ %^ [e|i]
   .o. o -> 0 || _ %^ a
   .o. %^ -> 0;
 
+# Diacritic flags are used in the verb subsystem, and here we compute the
+# equivalent transducer without flags, so that lookup can use it.
 eliminate flags

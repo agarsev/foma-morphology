@@ -1,40 +1,123 @@
 # Verbos
 # ======
+# This script analyzes Spanish verbs morphologically. Spanish verbs carry person
+# and number information along with tense and mood. 
+# 
+# Note that apart from those analyzed here,
+# there are additional possible tenses, which are formed periphrastically and
+# thus cannot be analyzed by this script. They are always formed with the verb `haber`
+# plus a non-finite form, so they would be easy to detect in a multiword tagger
+# or in the next level, e.g. a syntactical analyzer.
+#
+# Person and number information is collapsed into the same composite tag, where
+# `+1p` means first person plural. Preson can be 1, 2 or 3, number singular (s)
+# or plural (p).
+
+# The participle form has adjective-like characteristics, so we need the usual
+# gender and number morphemes.
+define AGen ["+Masc":0 | "+Fem":[%^ a]];
+define SPlural ["+Sing":0 | "+Plural":[%^ s]];
 define GenNum AGen SPlural;
+
+# Vowels are an important part of the fusional verb morphology, so we need to
+# identify them.
 define Vocal [a|e|i|o|u];
 
+# Lexeme
+# ------
+# Here regular lexemes are loaded. However, many verbs in Spanish are irregular
+# in that the root changes with different tenses, while sticking to the normal
+# inflection paradigm (or sometimes jumping paradigm). This "regular
+# irregularity" is encoded with a priority union, which bypasses `VLex` and
+# gives the correct surface form for a given verb in that tense.
+
+# The root form of Spanish verbs is the infinitive. Here it is loaded from the
+# dictionary file. Verbs in Spanish infinitive always end in a, e, i + r.
 define VInfs @txt"data/ES/OP/Verb.txt";
+
+# Flag diacritics are used to find out what paradigm a given verb belongs to.
+# The root form is passed through this transducer, which adds a feature
+# (`CONJ`) representing what "conjugación" (paradigm) should be used, according
+# to the last vowel in the root.
 define VConj ?* [ "@P.CONJ.1@":0 a
                 | "@P.CONJ.2@":0 e
                 | "@P.CONJ.3@":0 i
                 ] r;
 define VLex VConj .o. VInfs;
 
+# Though very irregular, personal morphemes can be identified and are defined
+# here. When used, they do not suffer boundary changes, but second person plural
+# may add a "tilde" to the vowel, so it's marked with a preceding `%'`.
 define Personas "+1s":0 | "+2s":s | "+3s":0
               | "+1p":[m o s] | "+2p":[%' i s] | "+3p":n
               ;
 
+# Non-finite forms
+# ----------------
+# A number of special markers are used, which indicate the type of morphological
+# change that will occur when the suffix is added. A common one is `%R`, that
+# discards the 'r' at the end of the root form.
+
+# The infinitive is the dictionary form, so no morpheme.
 define NoFin "+Inf":0
+# The gerund is formed with the suffix "ndo", but transforms 'i' and 'e' in the
+# last syllable into 'ie'.
            | "+Ger":[%R %EIIE n d o]
+# The participle ends in "do", but 'e' transforms into 'i'. Gender and number
+# information can also be added.
            | "+Part":[%R %EI d o] GenNum
+# The imperative only exists as a different form for the second person, singular and plural.
            | "+Imp":%R ["+2s":%IE |"+2p":d]
            ;
+
+# R-keeping forms
+# ---------------
+# These forms come from the deformation of the root form + the verb "haber", so
+# they keep the last 'r' and are quite more regular.
+
+# The future tense is formed with the present tense of 'haber' attached (minus
+# 'h').
 define Futuro "+Fut":0
               [ "+1s":é | "+1p":{emos}
               | "+2s":{ás} | "+2p":{éis}
               | "+3s":{á} | "+3p":{án}
               ];
+# The conditional is very regular, with a set morpheme plus the personal morpheme
 define Condicional "+Cond":{ía} Personas;
+# "tener" has a different root in the conditional. Other verbs do too, and they
+# would have to be added here.
 define CondLex {tener}:{tendr};
 
+# Subjunctive past
+# ----------------
+# _Pretérito perfecto simple de subjuntivo_
+#
+# It's a very regular tense, but different in the first "conjugación". The flag
+# diacritics allow each form only if the correct paradigm is matched.
 define SubjPret "+PretSubj":a Personas "@E.CONJ.1@":0
               | "+PretSubj":[%R %EIIE r a] Personas "@D.CONJ.1@":0
               ;
+# As before, the verb "dar" has a different form in this tense. In fact, it also
+# jumps paradigm, and we encode that re-setting the flag diacritic. In following
+# tenses the same pattern of defining alternative lexemes is used.
 define SPLex {dar}:["@P.CONJ.3@" d i r];
 
+# Past continuous
+# ---------------
+# _Pretérito imperfecto_
+#
+# Again a regular tense, in the second and third paradigms the last root vowel
+# has to be deleted `%V`.
 define PretI "+PretImperf":[%R b a] Personas "@E.CONJ.1@":0
            | "+PretImperf":[%R %V í a] Personas "@D.CONJ.1@":0
            ;
+
+# Past perfect
+# ------------
+# _Pretérito perfecto_
+#
+# The most irregular tense, it's regular in its own way. The morphemes are
+# almost the same but with slight variations in the first and other paradigms.
 define PretP "+PretPerf":%R
                [ [ "+1s":[%V é] | "+1p":{mos}
                  | "+2s":{ste} | "+2p":{steis}
@@ -45,10 +128,17 @@ define PretP "+PretPerf":%R
                  | "+3s":[%V i ó ] | "+3p":[%V i e r o n]
                  ] "@D.CONJ.1@":0
                ];
-define PPLex {dar}:["@P.CONJ.1@" {dir}]
+# A number of verbs have different roots for this tense.
+define PPLex {dar}:["@P.CONJ.3@" {dir}]
            | {decir}:{dijir}
            ;
 
+# Present
+# -------
+# _Presente_
+#
+# The present is regular but a number of morpheme boundary merges have to be
+# recorded.
 define Pres "+Pres":%R [ "+1s":[%V o] | "+1p":{mos}
                        | "+2s":[%IE s] | "+2p":[%' i s]
                        | "+3s":%IE | "+3p":[%IE n]
@@ -57,13 +147,21 @@ define PresLex {encontrar}:{encuentrar}
              | {pedir}:{pidir}
              ;
 
+# In the subjunctive mood, the present is even more regular.
 define PresSubj "+PresSubj":[%R %V e] Personas "@E.CONJ.1@"
               | "+PresSubj":[%R %V a] Personas "@D.CONJ.1@"
               ;
 
+# Final touches
+# -------------
 
+# Spanish verbs can have clitic pronouns affixed, which are appended here and
+# noted with a `+Clit` tag.
 define Clitic "+Clit":[({se}) {le}|{la}|{lo} | {se}];
 
+# Regular verb inflection is defined in this regex. First comes the root
+# (`VLex`), which can be bypassed by specific roots for specific tenses for the
+# "regular irregular" verbs.
 define VReg VLex NoFin
           | VLex Futuro
           | [CondLex .P. VLex] Condicional
@@ -74,6 +172,9 @@ define VReg VLex NoFin
           | VLex PresSubj
           ;
 
+# Here completely irregular forms are listed, and bypass directly all regular
+# inflection. There are a lot of examples in the language, and only a few are
+# listed here. Adding more would just mean appending them to the list.
 define VIrreg [{haber} "+Pres" "+3s"]:{ha}
             | [{hacer} "+Part"]:{hecho} GenNum
             | [{hacer} "+PretPerf" "+3s"]:{hizo}
@@ -83,14 +184,25 @@ define VIrreg [{haber} "+Pres" "+3s"]:{ha}
             | [{ser} "+PretPerf" "+3s"]:{fue}
             ;
 
+# The final regex is composed here. Irregular bypasses with the priority union
+# (`.P.`) the regular inflection, clitics are optionally added, and the
+# part-of-speech tag is included. Finally, the rewrite rules process the special
+# symbols that different suffixes way have included.
 regex [VIrreg .P. VReg] (Clitic) "+Verbo":0
+# `%R` deletes an 'r'.
    .o. r %R -> 0
+# `%V` deletes a vowel.
    .o. Vocal %V -> 0
+# `%IE` turns i into e.
    .o. i %IE -> e
+# `%EI` turns e into i.
    .o. e %EI -> i
+# `%EIIE` turns e or i into 'ie'.
    .o. [e|i] %EIIE -> i e
+# `%'` adds a tilde to the vowel.
    .o. a %' -> á
    .o. e %' -> é
    .o. i %' -> í
+# Unused symbols are cleaned up.
    .o. [%'|%IE|%EI|%EIIE] -> 0
    ;
